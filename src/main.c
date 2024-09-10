@@ -56,7 +56,14 @@ void draw_sprite(sprite_atlas *sprite, Vector2I position, Vector2I atlas_locatio
             if ((position.y + i - atlas_location.y) < BASE_HEIGHT && (position.x + j - atlas_location.x) < BASE_WIDTH) {
                 // Check if the pixel is within the bounds of the sprite
                 if (i < sprite->height && j < sprite->width) {
-                    base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] = sprite->buffer[i * sprite->width + j];
+                    // add transparency
+                    uint32_t pixel = sprite->buffer[i * sprite->width + j];
+                    float alpha = (pixel & 0xFF000000) / 0xFF000000;
+                    //printf("%f\n", alpha);
+                    //pixel = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] * (1-alpha) + pixel * alpha;
+                    pixel = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] * (1-alpha);
+                    //pixel = pixel * alpha;
+                    base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] = pixel;
                 }
             }
         }
@@ -65,6 +72,11 @@ void draw_sprite(sprite_atlas *sprite, Vector2I position, Vector2I atlas_locatio
 // Same but a whole image
 void draw_image(sprite_atlas *sprite, Vector2I position) {
     draw_sprite(sprite, position, (Vector2I){0, 0}, (Vector2I){sprite->width, sprite->height});
+}
+
+// Draw a frame
+void draw_frame(sprite_atlas *sprite, Vector2I position, int frame, Vector2I sprite_size) {
+    draw_sprite(sprite, position, (Vector2I){frame * sprite_size.x, 0}, sprite_size); // !!! add modulo for extra rows
 }
 
 void update_graphics() {
@@ -86,10 +98,13 @@ int main() {
     mfb_set_viewport_best_fit(window, BASE_WIDTH, BASE_HEIGHT);
 
     sprite_atlas image = load_image_bmp("assets/test.bmp");
+    sprite_atlas dude = load_image_bmp("assets/TEST_DUDE_CR.bmp");
 
     while (mfb_wait_sync(window)) {
         update_graphics();
         draw_image(&image, (Vector2I){100, 100});
+        // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
+        draw_image(&dude, (Vector2I){0, 0});
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
     }
 
@@ -112,10 +127,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     argv[0] = cmdLine; // Treat the whole command line as a single argument
     
     // Open a console to show the debug output
-    // AllocConsole();
-    // FILE* fp;
-    // freopen_s(&fp, "CONOUT$", "w", stdout);
-    // freopen_s(&fp, "CONOUT$", "w", stderr);
+     AllocConsole();
+     FILE* fp;
+     freopen_s(&fp, "CONOUT$", "w", stdout);
+     freopen_s(&fp, "CONOUT$", "w", stderr);
 
     // Call main with the parsed arguments
     int result = main(argc, argv);
