@@ -22,7 +22,7 @@ typedef struct {
 
 void set_windows_icon() {
     #ifdef _WIN32
-    HICON hIcon = (HICON)LoadImage(NULL, "assets/icon.ico", IMAGE_ICON, 32, 32, LR_LOADFROMFILE);
+    HICON hIcon = (HICON)LoadImage(NULL, "assets/icon.ico", IMAGE_ICON, 256, 256, LR_LOADFROMFILE);
     if (!hIcon) {
         MessageBox(NULL, "Could not load icon!", "Error", MB_ICONERROR);
         return;
@@ -96,7 +96,6 @@ int main() {
     free(scaled_buffer);
     return 0;
 }
-
 
 #ifdef _WIN32
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
