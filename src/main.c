@@ -82,13 +82,15 @@ int main() {
     struct mfb_window *window = mfb_open_ex("rpg.c", BASE_WIDTH * 4, BASE_HEIGHT * 4, WF_BORDERLESS);
     if (!window)
         return 0;
+    set_windows_icon();
+    mfb_set_viewport_best_fit(window, BASE_WIDTH, BASE_HEIGHT);
 
-    // mfb_set_viewport_best_fit(window, BASE_WIDTH, BASE_HEIGHT);
+    sprite_atlas image = load_image_bmp("assets/test.bmp");
 
     while (mfb_wait_sync(window)) {
         update_graphics();
-        // scale_buffer(window_width, window_height);  // Scale every frame in case of window resize
-        mfb_update(window, base_buffer);
+        draw_image(&image, (Vector2I){100, 100});
+        mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
     }
 
     free(scaled_buffer);
