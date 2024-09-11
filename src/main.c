@@ -1,25 +1,15 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
-#include "minifb/MiniFB.h"
-#include "minifb/MiniFB_enums.h"
+
+#include <minifb/MiniFB.h>
+#include <minifb/MiniFB_enums.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 
-#define BASE_WIDTH  240
-#define BASE_HEIGHT 160
-uint32_t base_buffer[BASE_WIDTH * BASE_HEIGHT];
-uint32_t *scaled_buffer = NULL;
-
-typedef struct {
-    int x;
-    int y;
-} Vector2I;
-
-#include "load.c"
-#include "character.c"
+#include "text.c"
 
 void set_windows_icon() {
     #ifdef _WIN32
@@ -78,7 +68,7 @@ int main() {
         time = mfb_timer_now(timer);
         delta = mfb_timer_delta(timer);
         update_graphics();
-        draw_image(&font_atlas, (Vector2I){100, 100});
+        draw_char_8px(&font_atlas, (Vector2I){100, 100}, 'a');
         draw_character_idle_animation(&dude, 21, 0, 4, time, 10);
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         draw_image(&dude, (Vector2I){0, 0});

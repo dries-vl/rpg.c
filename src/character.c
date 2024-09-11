@@ -1,9 +1,10 @@
-#include "minifb/MiniFB.h"
-#include "minifb/MiniFB_enums.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdint.h>
+#include "load.c"
+
+typedef struct {
+    int x;
+    int y;
+} Vector2I;
 
 // Function to draw a sprite to the screen
 void draw_sprite(sprite_atlas *sprite, Vector2I position, Vector2I atlas_location, Vector2I sprite_size) {
