@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "text.c"
+#include "ui.c"
 
 
 static void
@@ -92,6 +92,7 @@ int main() {
     mfb_set_viewport_best_fit(window, BASE_WIDTH, BASE_HEIGHT);
 
     sprite_atlas font_atlas = load_image_bmp("assets/font_atlas.bmp");
+    sprite_atlas ui_atlas = load_image_bmp("assets/ui_atlas.bmp");
     sprite_atlas dude = load_image_bmp("assets/TEST_DUDE_CR.bmp");
 
     struct mfb_timer *timer = mfb_timer_create();
@@ -118,12 +119,15 @@ int main() {
         strcpy(game_state.collision_map[i], collision_map[i]);
     }
 
+    mfb_set_target_fps(30);
+
     while (mfb_wait_sync(window)) {
         time = mfb_timer_now(timer);
         delta = mfb_timer_delta(timer);
+        char fps_string[100]; snprintf(fps_string, sizeof(fps_string), "FPS: %.0f", 1.0 / delta);
         update_graphics();
-        char buffer[100]; snprintf(buffer, sizeof(buffer), "time: %.2f", time);
-        draw_string_8px(&font_atlas, (Vector2I){1, 1}, buffer);
+        draw_string_8px(&font_atlas, (Vector2I){1, 1}, fps_string);
+        draw_string_8px(&font_atlas, (Vector2I){1, 100}, "This is a sentence supposed to look normal. Does it?");
         update_player(&game_state.player, delta, time, 8);
         update_player(&extra_player, delta, time, 8);
         update_player(&extra_player2, delta, time, 8);
