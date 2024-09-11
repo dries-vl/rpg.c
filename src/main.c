@@ -6,12 +6,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-#include "load.c"
+#include <time.h>
 
 #define BASE_WIDTH  240
 #define BASE_HEIGHT 160
-
 uint32_t base_buffer[BASE_WIDTH * BASE_HEIGHT];
 uint32_t *scaled_buffer = NULL;
 
@@ -19,6 +17,9 @@ typedef struct {
     int x;
     int y;
 } Vector2I;
+
+#include "load.c"
+#include "character.c"
 
 void set_windows_icon() {
     #ifdef _WIN32
@@ -48,26 +49,6 @@ void fill_square(int start_x, int start_y, int end_x, int end_y, uint32_t color)
     }
 }
 
-// Function to draw a sprite to the screen
-void draw_sprite(sprite_atlas *sprite, Vector2I position, Vector2I atlas_location, Vector2I sprite_size) {
-    for (int i = atlas_location.y; i < sprite_size.y; i++) {
-        for (int j = atlas_location.x; j < sprite_size.x; j++) { // loop through the sprite in the atlas
-            // Check if the pixel is within the bounds of the base buffer
-            if ((position.y + i - atlas_location.y) < BASE_HEIGHT && (position.x + j - atlas_location.x) < BASE_WIDTH) {
-                // Check if the pixel is within the bounds of the sprite
-                if (i < sprite->height && j < sprite->width) {
-                    base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] = sprite->buffer[i * sprite->width + j];
-                }
-            }
-        }
-    }
-}
-
-// Same but a whole image
-void draw_image(sprite_atlas *sprite, Vector2I position) {
-    draw_sprite(sprite, position, (Vector2I){0, 0}, (Vector2I){sprite->width, sprite->height});
-}
-
 void update_graphics() {
     int half_width = BASE_WIDTH / 2;
     int half_height = BASE_HEIGHT / 2;
@@ -86,13 +67,23 @@ int main() {
     set_windows_icon();
     mfb_set_viewport_best_fit(window, BASE_WIDTH, BASE_HEIGHT);
 
-    sprite_atlas image = load_image_bmp("assets/test.bmp");
     sprite_atlas font_atlas = load_image_bmp("assets/font_atlas.bmp");
+    sprite_atlas dude = load_image_bmp("assets/TEST_DUDE_CR.bmp");
+
+    struct mfb_timer *timer = mfb_timer_create();
+    double delta = 0;
+    double time = 0;
 
     while (mfb_wait_sync(window)) {
+        time = mfb_timer_now(timer);
+        delta = mfb_timer_delta(timer);
         update_graphics();
         draw_image(&font_atlas, (Vector2I){100, 100});
+        draw_character_idle_animation(&dude, 21, 0, 4, time, 10);
+        // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
+        draw_image(&dude, (Vector2I){0, 0});
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
+        printf("FPS: %f\n", 1.0 / delta);
     }
 
     free(scaled_buffer);
@@ -113,10 +104,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     argv[0] = cmdLine; // Treat the whole command line as a single argument
     
     // Open a console to show the debug output
-    // AllocConsole();
-    // FILE* fp;
-    // freopen_s(&fp, "CONOUT$", "w", stdout);
-    // freopen_s(&fp, "CONOUT$", "w", stderr);
+     AllocConsole();
+     FILE* fp;
+     freopen_s(&fp, "CONOUT$", "w", stdout);
+     freopen_s(&fp, "CONOUT$", "w", stderr);
 
     // Call main with the parsed arguments
     int result = main(argc, argv);
