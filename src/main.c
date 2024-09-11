@@ -79,14 +79,14 @@ int main() {
     struct mfb_timer *timer = mfb_timer_create();
     double delta = 0;
     double time = 0;
-    Player player = create_player((Vector2I){0, 0}, &dude);
-    player.move = RIGHT;
+    Player player = create_player((Vector2I){1, 1}, &dude);
 
     while (mfb_wait_sync(window)) {
         time = mfb_timer_now(timer);
         delta = mfb_timer_delta(timer);
         update_graphics();
         draw_image(&font_atlas, (Vector2I){100, 100});
+        update_player(&player, delta, time, 10);
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         // draw_image(&dude, (Vector2I){0, 0});
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);

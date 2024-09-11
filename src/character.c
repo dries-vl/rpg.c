@@ -51,13 +51,15 @@ void draw_sprite(sprite_atlas *sprite, Vector2I position, Vector2I atlas_locatio
     }
 }
 // Same but a whole image
-void draw_image(sprite_atlas *sprite, Vector2I position) {
-    draw_sprite(sprite, position, (Vector2I){0, 0}, (Vector2I){sprite->width, sprite->height});
+void draw_image(sprite_atlas *image, Vector2I position) {
+    draw_sprite(image, position, (Vector2I){0, 0}, (Vector2I){image->width, image->height});
 }
 
 // Draw a frame
-void draw_frame(sprite_atlas *sprite, Vector2I position, int frame, Vector2I sprite_size) {
-    draw_sprite(sprite, position, (Vector2I){frame * sprite_size.x, 0}, sprite_size); // !!! add modulo for extra rows
+void draw_frame(sprite_atlas *atlas, Vector2I position, int frame, Vector2I sprite_size) {
+    int x_position = (frame * sprite_size.x) % atlas->width;
+    int y_position = ((frame * sprite_size.x) / atlas->width) * sprite_size.y;
+    draw_sprite(atlas, position, (Vector2I){x_position, y_position}, sprite_size);
 }
 
 
@@ -67,7 +69,11 @@ void draw_character_idle_animation(sprite_atlas *buffer, Vector2I position, int 
 }
 
 void draw_player_run_animation(Player *player, double time, double speed) {
-    draw_character_idle_animation(player->sprite_sheet, player->position, player->size, 0, 4, time, speed);
+    draw_character_idle_animation(player->sprite_sheet, player->position, player->size, 16, 4, time, speed);
+}
+
+void draw_player_idle_animation(Player *player, double time, double speed) {
+    draw_character_idle_animation(player->sprite_sheet, player->position, player->size, 32, 4, time, speed);
 }
 
 /*
@@ -80,7 +86,7 @@ Player create_player(Vector2I position, sprite_atlas *sprite_sheet) {
     player.position_exact = (Vector2F){position.x * GRID_SIZE, position.y * GRID_SIZE};
     player.grid_position = position;
     player.direction = 1; // right
-    player.move = 4; // idle
+    player.move = IDLE; // idle
     player.size = 21;
     player.sprite_sheet = sprite_sheet;
     player.status = 1; // running
@@ -92,17 +98,14 @@ void move_player(Player *player, double time) {
     player->position = (Vector2I){player->grid_position.x * GRID_SIZE, player->grid_position.y * GRID_SIZE};
 }
 
-void update_player(Player *player, double delta, double speed) {
+void update_player(Player *player, double delta, double time, double speed) {
     if (player->move != IDLE) {
         switch (player->move) {
             case UP:
                 player->position_exact.y -= speed * delta;
                 break;
             case RIGHT:
-                printf("player exact position: %f, %f\n", player->position_exact.x, player->position_exact.y);
                 player->position_exact.x += speed * delta;
-                printf("player exact position: %f, %f\n", player->position_exact.x, player->position_exact.y);
-                printf("move: %f\n", speed * delta);
                 break;
             case DOWN:
                 player->position_exact.y += speed * delta;
@@ -111,10 +114,20 @@ void update_player(Player *player, double delta, double speed) {
                 player->position_exact.x -= speed * delta;
                 break;
         }
-        printf("player position: %d, %d\n", player->position.x, player->position.y);
         player->position.x = (int)(round(player->position_exact.x));
         player->position.y = (int)(round(player->position_exact.y));
-        printf("player position: %d, %d\n", player->position.x, player->position.y);
+    }
+    switch (player->move) {
+        case UP:
+            draw_player_run_animation(player, time, 10);
+        case RIGHT:
+            draw_player_run_animation(player, time, 10);
+        case DOWN:
+            draw_player_run_animation(player, time, 10);
+        case LEFT:
+            draw_player_run_animation(player, time, 10);
+        case IDLE:
+            draw_player_idle_animation(player, time, 10);
     }
 }
 
