@@ -24,8 +24,21 @@ typedef struct {
     int size;
     sprite_atlas *sprite_sheet;
     int status; // 0 = idle, 1 = running
+    int stop; // 0 = continuous movement, 1 = stopped
 } Player;
 
+typedef struct {
+    Player player;
+    char **collision_map;
+} Game_state;
+
+Game_state init_game_state(Player player, Vector2I map_size) {
+    Game_state game_state;
+    game_state.player = player;
+    return game_state;
+}
+
+Game_state game_state;
 /*
                                                 ----RENDERING----
 */
@@ -45,12 +58,12 @@ void draw_sprite(sprite_atlas *sprite, Vector2I position, Vector2I atlas_locatio
                     //printf("%f\n", alpha);
                     //pixel = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] * (1-alpha) + pixel * alpha;
                     //pixel = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] * (1-alpha);
-                    uint32_t R = (pixel & 0x00FF0000) * alpha;
-                    uint32_t G = (pixel & 0x0000FF00) * alpha;
-                    uint32_t B = (pixel & 0x000000FF) * alpha;
-                    R += (pixel_old & 0x00FF0000) * (1-alpha);
-                    G += (pixel_old & 0x0000FF00) * (1-alpha);
-                    B += (pixel_old & 0x000000FF) * (1-alpha);
+                    uint32_t R = (int)((pixel & 0x00FF0000) * alpha) & 0x00FF0000;
+                    uint32_t G = (int)((pixel & 0x0000FF00) * alpha) & 0x0000FF00;
+                    uint32_t B = (int)((pixel & 0x000000FF) * alpha) & 0x000000FF;
+                    R += (int)((pixel_old & 0x00FF0000) * (1.0f-alpha)) & 0x00FF0000;
+                    G += (int)((pixel_old & 0x0000FF00) * (1.0f-alpha)) & 0x0000FF00;
+                    B += (int)((pixel_old & 0x000000FF) * (1.0f-alpha)) & 0x000000FF;
                     base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] = R + G + B;
                 }
             }
@@ -100,42 +113,113 @@ Player create_player(Vector2I position, sprite_atlas *sprite_sheet) {
     return player;
 }
 
+int move_player(Player *player, Direction move) {
+    player->stop = FALSE;
+    player->move = move;
+    player->direction = move;
+}
+
 void move_input(Direction move) {
-    //player->move = move;
-    //player->direction = move;
-    printf("%d\n", move);
+    printf("input: %d\n", move);
+    printf("player: %d\n", game_state.player.move);
+    if (move == IDLE) {
+        game_state.player.stop = TRUE;
+    }
+    if (game_state.player.move == IDLE) {
+        printf("MOVE\n");
+        move_player(&game_state.player, move);
+    }
 }
 
 void update_player(Player *player, double delta, double time, double speed) {
     if (player->move != IDLE) {
         switch (player->move) {
             case UP:
-                player->position_exact.y -= speed * delta;
+                if (game_state.collision_map[player->grid_position.y - 1][player->grid_position.x] == ' ') {
+                    player->position_exact.y -= 6 * speed * delta; // added 6 to make it move in sync with the run animation
+                    player->position.y = (int)(round(player->position_exact.y));
+                }
+                else if (player->stop == TRUE) {
+                    player->move = IDLE;
+                }
+                if (player->position.y <= (player->grid_position.y - 1) * GRID_SIZE) { // if player arrives at the tile above
+                    player->position.y = (player->grid_position.y - 1) * GRID_SIZE; // set player position to the tile above
+                    player->position_exact.y = (double)((player->grid_position.y - 1) * GRID_SIZE); // set player position exact to the tile above
+                    player->grid_position.y -= 1;
+                    if (player->stop == TRUE) {
+                        player->move = IDLE;
+                    }
+                }
                 break;
             case RIGHT:
-                player->position_exact.x += speed * delta;
+                if (game_state.collision_map[player->grid_position.y][player->grid_position.x + 1] == ' ') {
+                    player->position_exact.x += 6 * speed * delta;
+                    player->position.x = (int)(round(player->position_exact.x));
+                }
+                else if (player->stop == TRUE) {
+                    player->move = IDLE;
+                }
+                if (player->position.x >= (player->grid_position.x + 1) * GRID_SIZE) { // if player arrives at the tile to the right
+                    player->position.x = (player->grid_position.x + 1) * GRID_SIZE; // set player position to the tile to the right
+                    player->position_exact.x = (double)((player->grid_position.x + 1) * GRID_SIZE); // set player position exact to the tile to the right
+                    player->grid_position.x += 1;
+                    if (player->stop == TRUE) {
+                        player->move = IDLE;
+                    }
+                }
                 break;
             case DOWN:
-                player->position_exact.y += speed * delta;
+                if (game_state.collision_map[player->grid_position.y + 1][player->grid_position.x] == ' ') {
+                    player->position_exact.y += 6 * speed * delta;
+                    player->position.y = (int)(round(player->position_exact.y));
+                }
+                else if (player->stop == TRUE) {
+                    player->move = IDLE;
+                }
+                if (player->position.y >= (player->grid_position.y + 1) * GRID_SIZE) { // if player arrives at the tile below
+                    player->position.y = (player->grid_position.y + 1) * GRID_SIZE; // set player position to the tile below
+                    player->position_exact.y = (double)((player->grid_position.y + 1) * GRID_SIZE); // set player position exact to the tile below
+                    player->grid_position.y += 1;
+                    if (player->stop == TRUE) {
+                        player->move = IDLE;
+                    }
+                }
                 break;
             case LEFT:
-                player->position_exact.x -= speed * delta;
+                if (game_state.collision_map[player->grid_position.y][player->grid_position.x - 1] == ' ') {
+                    player->position_exact.x -= 6 * speed * delta;
+                    player->position.x = (int)(round(player->position_exact.x));
+                }
+                else if (player->stop == TRUE) {
+                    player->move = IDLE;
+                }
+                if (player->position.x <= (player->grid_position.x - 1) * GRID_SIZE) { // if player arrives at the tile to the left
+                    player->position.x = (player->grid_position.x - 1) * GRID_SIZE; // set player position to the tile to the left
+                    player->position_exact.x = (double)((player->grid_position.x - 1) * GRID_SIZE); // set player position exact to the tile to the left
+                    player->grid_position.x -= 1;
+                    if (player->stop == TRUE) {
+                        player->move = IDLE;
+                    }
+                }
                 break;
         }
-        player->position.x = (int)(round(player->position_exact.x));
-        player->position.y = (int)(round(player->position_exact.y));
     }
     switch (player->move) {
         case UP:
-            draw_player_run_animation(player, time, 10);
+            draw_player_run_animation(player, time, speed);
+            break;
         case RIGHT:
-            draw_player_run_animation(player, time, 10);
+            draw_player_run_animation(player, time, speed);
+            break;
         case DOWN:
-            draw_player_run_animation(player, time, 10);
+            draw_player_run_animation(player, time, speed);
+            break;
         case LEFT:
-            draw_player_run_animation(player, time, 10);
+            draw_player_run_animation(player, time, speed);
+            break;
         case IDLE:
-            draw_player_idle_animation(player, time, 10);
+            draw_player_idle_animation(player, time, speed);
+            break;
     }
 }
 
