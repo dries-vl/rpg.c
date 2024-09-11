@@ -1,10 +1,17 @@
-#include "minifb/MiniFB.h"
-#include "minifb/MiniFB_enums.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+
+#include "load.c"
+
+typedef struct {
+    int x;
+    int y;
+} Vector2I;
+
+typedef struct {
+    double x;
+    double y;
+} Vector2F;
 
 typedef enum {UP, RIGHT, DOWN, LEFT, IDLE} Direction;
 

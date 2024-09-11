@@ -1,9 +1,8 @@
-#include "minifb/MiniFB.h"
-#include "minifb/MiniFB_enums.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+
+#include "globals.c"
 
 #pragma pack(push, 1)
 typedef struct {
