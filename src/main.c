@@ -62,6 +62,7 @@ void draw_sprite(sprite_atlas *sprite, Vector2I position, Vector2I atlas_locatio
         }
     }
 }
+
 // Same but a whole image
 void draw_image(sprite_atlas *sprite, Vector2I position) {
     draw_sprite(sprite, position, (Vector2I){0, 0}, (Vector2I){sprite->width, sprite->height});
@@ -86,10 +87,11 @@ int main() {
     mfb_set_viewport_best_fit(window, BASE_WIDTH, BASE_HEIGHT);
 
     sprite_atlas image = load_image_bmp("assets/test.bmp");
+    sprite_atlas font_atlas = load_image_bmp("assets/font_atlas.bmp");
 
     while (mfb_wait_sync(window)) {
         update_graphics();
-        draw_image(&image, (Vector2I){100, 100});
+        draw_image(&font_atlas, (Vector2I){100, 100});
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
     }
 
