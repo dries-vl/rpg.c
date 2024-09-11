@@ -10,6 +10,7 @@
 
 #define BASE_WIDTH  240
 #define BASE_HEIGHT 160
+#define GRID_SIZE 21
 uint32_t base_buffer[BASE_WIDTH * BASE_HEIGHT];
 uint32_t *scaled_buffer = NULL;
 
@@ -17,6 +18,11 @@ typedef struct {
     int x;
     int y;
 } Vector2I;
+
+typedef struct {
+    double x;
+    double y;
+} Vector2F;
 
 #include "load.c"
 #include "character.c"
@@ -75,17 +81,21 @@ int main() {
     struct mfb_timer *timer = mfb_timer_create();
     double delta = 0;
     double time = 0;
+    Player player = create_player((Vector2I){0, 0}, &dude);
+    player.move = RIGHT;
 
     while (mfb_wait_sync(window)) {
         time = mfb_timer_now(timer);
         delta = mfb_timer_delta(timer);
         update_graphics();
         draw_image(&image, (Vector2I){100, 100});
-        draw_character_idle_animation(&dude, 21, 0, 4, time, 10);
+        draw_player_run_animation(&player, time, 10);
+        update_player(&player, delta, 10);
+        // draw_character_idle_animation(&dude, 21, 0, 4, time, 10);
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
-        draw_image(&dude, (Vector2I){0, 0});
+        // draw_image(&dude, (Vector2I){0, 0});
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
-        printf("FPS: %f\n", 1.0 / delta);
+        // printf("FPS: %f\n", 1.0 / delta);
     }
 
     free(scaled_buffer);
