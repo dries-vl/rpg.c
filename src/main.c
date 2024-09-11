@@ -70,7 +70,8 @@ int main() {
         time = mfb_timer_now(timer);
         delta = mfb_timer_delta(timer);
         update_graphics();
-        draw_char_8px(&font_atlas, (Vector2I){100, 100}, 'a');
+        char buffer[100]; snprintf(buffer, sizeof(buffer), "time: %.2f", time);
+        draw_string_8px(&font_atlas, (Vector2I){1, 1}, buffer);
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         // draw_image(&dude, (Vector2I){0, 0});
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
@@ -95,10 +96,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     argv[0] = cmdLine; // Treat the whole command line as a single argument
     
     // Open a console to show the debug output
-     AllocConsole();
-     FILE* fp;
-     freopen_s(&fp, "CONOUT$", "w", stdout);
-     freopen_s(&fp, "CONOUT$", "w", stderr);
+     // AllocConsole();
+     // FILE* fp;
+     // freopen_s(&fp, "CONOUT$", "w", stdout);
+     // freopen_s(&fp, "CONOUT$", "w", stderr);
 
     // Call main with the parsed arguments
     int result = main(argc, argv);
