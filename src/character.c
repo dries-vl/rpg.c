@@ -100,9 +100,10 @@ Player create_player(Vector2I position, sprite_atlas *sprite_sheet) {
     return player;
 }
 
-void move_player(Player *player, double time) {
-    player->grid_position.x += 1;
-    player->position = (Vector2I){player->grid_position.x * GRID_SIZE, player->grid_position.y * GRID_SIZE};
+void move_input(Direction move) {
+    //player->move = move;
+    //player->direction = move;
+    printf("%d\n", move);
 }
 
 void update_player(Player *player, double delta, double time, double speed) {

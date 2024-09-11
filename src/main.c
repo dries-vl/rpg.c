@@ -11,6 +11,41 @@
 
 #include "text.c"
 
+
+static void
+keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed) {
+    const char *window_title = "BIIIIK";
+    if(window) {
+        window_title = (const char *) mfb_get_user_data(window);
+    }
+    fprintf(stdout, "%s > keyboard: key: %s (pressed: %d) [key_mod: %x]\n", window_title, mfb_get_key_name(key), isPressed, mod);
+    if (key == KB_KEY_ESCAPE) {
+        mfb_close(window);
+    }
+    switch (key) {
+        case KB_KEY_UP:
+            if (isPressed) {
+                move_input(UP);
+            }
+            break;
+        case KB_KEY_DOWN:
+            if (isPressed) {
+                move_input(DOWN);
+            }
+            break;
+        case KB_KEY_LEFT:
+            if (isPressed) {
+                move_input(LEFT);
+            }
+            break;
+        case KB_KEY_RIGHT: 
+            if (isPressed) {
+                move_input(RIGHT);
+            }
+            break;
+    }
+}
+
 void set_windows_icon() {
     #ifdef _WIN32
     HICON hIcon = (HICON)LoadImage(NULL, "assets/icon.ico", IMAGE_ICON, 256, 256, LR_LOADFROMFILE);
@@ -51,7 +86,7 @@ void update_graphics() {
 }
 
 int main() {
-    struct mfb_window *window = mfb_open_ex("rpg.c", BASE_WIDTH * 4, BASE_HEIGHT * 4, WF_BORDERLESS);
+    struct mfb_window *window = mfb_open_ex("rpg.c", BASE_WIDTH * 4, BASE_HEIGHT * 4, 0);
     if (!window)
         return 0;
     set_windows_icon();
@@ -64,6 +99,7 @@ int main() {
     double delta = 0;
     double time = 0;
     Player player = create_player((Vector2I){1, 1}, &dude);
+    mfb_set_keyboard_callback(window, keyboard);
 
     while (mfb_wait_sync(window)) {
         time = mfb_timer_now(timer);
