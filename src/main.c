@@ -27,8 +27,6 @@ typedef struct {
 #include "load.c"
 #include "character.c"
 
-
-
 void set_windows_icon() {
     #ifdef _WIN32
     HICON hIcon = (HICON)LoadImage(NULL, "assets/icon.ico", IMAGE_ICON, 256, 256, LR_LOADFROMFILE);
@@ -75,7 +73,7 @@ int main() {
     set_windows_icon();
     mfb_set_viewport_best_fit(window, BASE_WIDTH, BASE_HEIGHT);
 
-    sprite_atlas image = load_image_bmp("assets/test.bmp");
+    sprite_atlas font_atlas = load_image_bmp("assets/font_atlas.bmp");
     sprite_atlas dude = load_image_bmp("assets/TEST_DUDE_CR.bmp");
 
     struct mfb_timer *timer = mfb_timer_create();
@@ -88,10 +86,7 @@ int main() {
         time = mfb_timer_now(timer);
         delta = mfb_timer_delta(timer);
         update_graphics();
-        draw_image(&image, (Vector2I){100, 100});
-        draw_player_run_animation(&player, time, 10);
-        update_player(&player, delta, 10);
-        // draw_character_idle_animation(&dude, 21, 0, 4, time, 10);
+        draw_image(&font_atlas, (Vector2I){100, 100});
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         // draw_image(&dude, (Vector2I){0, 0});
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
