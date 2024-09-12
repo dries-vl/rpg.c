@@ -7,11 +7,13 @@ typedef struct {
     int x;
     int y;
 } Vector2I;
+#define ivec2(x, y) (Vector2I){x, y}
 
 typedef struct {
     double x;
     double y;
 } Vector2F;
+#define vec2(x, y) (Vector2F){x, y}
 
 typedef enum {UP, RIGHT, DOWN, LEFT, IDLE} Direction;
 

@@ -39,7 +39,7 @@ void fill_square(int start_x, int start_y, int end_x, int end_y, uint32_t color)
     }
 }
 
-void update_graphics() {
+void draw_background() {
     int half_width = BASE_WIDTH / 2;
     int half_height = BASE_HEIGHT / 2;
 
@@ -72,16 +72,16 @@ int main() {
         time = mfb_timer_now(timer);
         delta = mfb_timer_delta(timer);
         char fps_string[100]; snprintf(fps_string, sizeof(fps_string), "FPS: %.0f", 1.0 / delta);
-        update_graphics();
+        draw_background();
         draw_string_8px(&font_atlas, (Vector2I){1, 1}, fps_string);
         draw_string_8px(&font_atlas, (Vector2I){1, 100}, "This is a sentence supposed to look normal. Does it?");
         // update_player(&player, delta, time, 10);
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         // draw_image(&dude, (Vector2I){0, 0});
+        draw_sprite(&ui_atlas, ivec2(2,114), ivec2(2,114), ivec2(236, 44));
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
     }
 
-    free(scaled_buffer);
     return 0;
 }
 
