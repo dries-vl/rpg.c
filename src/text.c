@@ -1,4 +1,5 @@
 #include "character.c"
+#include "request.c"
 
 #define CHAR_SIZE_8PX 8
 #define SPACE_WIDTH_8PX 4

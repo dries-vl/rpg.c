@@ -120,6 +120,7 @@ int main() {
     }
 
     mfb_set_target_fps(30);
+    llm_request_async("Show me some shitty ascii art");
 
     while (mfb_wait_sync(window)) {
         time = mfb_timer_now(timer);
@@ -134,6 +135,7 @@ int main() {
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         // draw_image(&dude, (Vector2I){0, 0});
         draw_sprite(&ui_atlas, ivec2(2,114), ivec2(2,114), ivec2(236, 44));
+        draw_string_8px(&font_atlas, (Vector2I){8, 120}, current_llm_response);
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
         extra_player.stop = TRUE;
         if (extra_player.grid_position.y == 3) {

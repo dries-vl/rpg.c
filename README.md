@@ -1,5 +1,5 @@
 # tcc compile command
-tcc src/main.c -Iinclude -Llib -lminifb -luser32 -lgdi32 -lwinmm icon.res
+tcc src/main.c -Iinclude -Llib -lminifb -lcurl -ltinycthread -luser32 -lgdi32 -lwinmm icon.res
 
 # create .ico with magick command (needed for windows icons)
 magick convert logo.png logo.ico
