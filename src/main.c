@@ -11,6 +11,40 @@
 
 #include "ui.c"
 
+
+static void
+keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed) {
+    const char *window_title = "BIIIIK";
+    if(window) {
+        window_title = (const char *) mfb_get_user_data(window);
+    }
+    if (key == KB_KEY_ESCAPE) {
+        mfb_close(window);
+    }
+    
+    if (isPressed) {
+        switch (key) {
+            case KB_KEY_UP:
+                move_input(UP);
+                break;
+            case KB_KEY_DOWN:
+                move_input(DOWN);
+                break;
+            case KB_KEY_LEFT:
+                move_input(LEFT);
+                break;
+            case KB_KEY_RIGHT: 
+                move_input(RIGHT);
+            break;
+        }
+        printf("KEY PRESSED\n");
+    }
+    else {
+        move_input(IDLE);
+        printf("IDLE\n");
+    }
+}
+
 void set_windows_icon() {
     #ifdef _WIN32
     HICON hIcon = (HICON)LoadImage(NULL, "assets/icon.ico", IMAGE_ICON, 256, 256, LR_LOADFROMFILE);
@@ -64,7 +98,26 @@ int main() {
     struct mfb_timer *timer = mfb_timer_create();
     double delta = 0;
     double time = 0;
-    Player player = create_player((Vector2I){1, 1}, &dude);
+    game_state = init_game_state(create_player((Vector2I){1, 1}, &dude), (Vector2I){12, 6}); // size map is random!!
+    printf("player: %d\n", game_state.player.move);
+    Player extra_player = create_player((Vector2I){6, 4}, &dude);
+    Player extra_player2 = create_player((Vector2I){7, 4}, &dude);
+    mfb_set_keyboard_callback(window, keyboard);
+    move_player(&extra_player, UP);
+    // Define the collision map
+    char collision_map[6][13] = {"############",
+                                 "#          #",
+                                 "#          #",
+                                 "#          #",
+                                 "#          #",
+                                 "############"};
+
+    // Allocate memory for game_state.collision_map
+    game_state.collision_map = (char **)malloc(6 * sizeof(char *));
+    for (int i = 0; i < 6; i++) {
+        game_state.collision_map[i] = (char *)malloc(13 * sizeof(char));
+        strcpy(game_state.collision_map[i], collision_map[i]);
+    }
 
     mfb_set_target_fps(30);
 
@@ -75,11 +128,21 @@ int main() {
         draw_background();
         draw_string_8px(&font_atlas, (Vector2I){1, 1}, fps_string);
         draw_string_8px(&font_atlas, (Vector2I){1, 100}, "This is a sentence supposed to look normal. Does it?");
-        // update_player(&player, delta, time, 10);
+        update_player(&game_state.player, delta, time, 8);
+        update_player(&extra_player, delta, time, 8);
+        update_player(&extra_player2, delta, time, 8);
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         // draw_image(&dude, (Vector2I){0, 0});
         draw_sprite(&ui_atlas, ivec2(2,114), ivec2(2,114), ivec2(236, 44));
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
+        extra_player.stop = TRUE;
+        if (extra_player.grid_position.y == 3) {
+            move_player(&extra_player, DOWN);
+        }
+        else if (extra_player.grid_position.y == 4) {
+            move_player(&extra_player, UP);
+        }
+        // printf("FPS: %f\n", 1.0 / delta);
     }
 
     return 0;
@@ -99,10 +162,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     argv[0] = cmdLine; // Treat the whole command line as a single argument
     
     // Open a console to show the debug output
-     // AllocConsole();
-     // FILE* fp;
-     // freopen_s(&fp, "CONOUT$", "w", stdout);
-     // freopen_s(&fp, "CONOUT$", "w", stderr);
+    AllocConsole();
+    FILE* fp;
+    freopen_s(&fp, "CONOUT$", "w", stdout);
+    freopen_s(&fp, "CONOUT$", "w", stderr);
 
     // Call main with the parsed arguments
     int result = main(argc, argv);
