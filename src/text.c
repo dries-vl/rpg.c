@@ -48,15 +48,19 @@ void draw_char_8px(sprite_atlas *font_atlas, Vector2I position, char c) {
 // Draw a string with 8x8 pixel characters
 void draw_string_8px(sprite_atlas *font_atlas, Vector2I position, char *str) {
     int original_position_x = position.x;
+    int escaped = 0;
     for (char *p = str; *p != '\0'; p++) {
         switch (*p) {
             case ' ': position.x += SPACE_WIDTH_8PX; break;
-            case '\n': position.y += CHAR_SIZE_8PX; position.x = original_position_x; break;
-            default: draw_char_8px(font_atlas, position, *p); position.x += FONT_8PX_WIDTHS[*p];
+            case 92: /*'\\'*/ escaped = 1; break;
+            case 10: /*'\n'*/ position.y += CHAR_SIZE_8PX; position.x = original_position_x; break;
+            case 'n': if (escaped) {position.y += CHAR_SIZE_8PX; position.x = original_position_x; break;}; // FALL-THROUGH!!!
+            default: draw_char_8px(font_atlas, position, *p); position.x += FONT_8PX_WIDTHS[*p]; break;
         }
         if (position.x >= BASE_WIDTH - CHAR_SIZE_8PX) {
             position.x = original_position_x;
             position.y += CHAR_SIZE_8PX;
         }
+        if (*p != 92) escaped = 0;
     }
 }

@@ -120,13 +120,6 @@ int llm_request_stream(void *prompt) {
 
             // Perform the request, check if still running
             curl_multi_perform(multi_handle, &still_running);
-
-            // Here you can print out the content so far if you want
-            if (current_response_len > 0) {
-                printf("Current response: %s\n", current_llm_response);
-            } else {
-                printf("Nothing yet");
-            }
         }
 
         // Cleanup
