@@ -21,6 +21,10 @@ void load_map(sprite_atlas *map, Game_state *state) {
 }
 
 void draw_map(sprite_atlas *map, sprite_atlas *tile_atlas) {
+    // Relative position to the player
+    Vector2I relative_position = (Vector2I){0, 0};
+    relative_position.x -= game_state.player.position.x - BASE_WIDTH/2 + GRID_SIZE/2;
+    relative_position.y -= game_state.player.position.y - BASE_HEIGHT/2 + GRID_SIZE/2;
     for (int i = 0; i < map->height; i++) {
         for (int j = 0; j < map->width; j++) {
             int tile = 0;
@@ -30,7 +34,7 @@ void draw_map(sprite_atlas *map, sprite_atlas *tile_atlas) {
             int G = ((((pixel & 0x0000FF00) >> 8) + 1) / 16);
             int B = (((pixel & 0x000000FF) + 1) / 16);
             tile = R * 32 + G * 16 + B;
-            draw_tile(tile_atlas, (Vector2I){j * GRID_SIZE, i * GRID_SIZE}, tile);
+            draw_tile(tile_atlas, (Vector2I){(j * GRID_SIZE) + relative_position.x, (i * GRID_SIZE) + relative_position.y}, tile);
         }
     }
 }

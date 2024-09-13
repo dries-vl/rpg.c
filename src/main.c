@@ -98,10 +98,10 @@ int main() {
     struct mfb_timer *timer = mfb_timer_create();
     double delta = 0;
     double time = 0;
-    game_state = init_game_state(create_player((Vector2I){1, 1}, &dude, (Vector2I){21, 21})); // size map is random!!
+    game_state = init_game_state(create_player((Vector2I){1, 1}, &dude, (Vector2I){16, 21})); // size map is random!!
     printf("player: %d\n", game_state.player.move);
-    Player extra_player = create_player((Vector2I){6, 4}, &dude, (Vector2I){21, 21});
-    Player extra_player2 = create_player((Vector2I){7, 4}, &dude, (Vector2I){21, 21});
+    Player extra_player = create_player((Vector2I){7, 4}, &dude, (Vector2I){16, 21});
+    Player extra_player2 = create_player((Vector2I){6, 4}, &dude, (Vector2I){16, 21});
     mfb_set_keyboard_callback(window, keyboard);
     load_map(&map, &game_state);
     move_player(&extra_player, UP);
@@ -116,19 +116,29 @@ int main() {
         draw_map(&map, &tile_atlas);
         draw_string_8px(&font_atlas, (Vector2I){1, 1}, fps_string);
         draw_string_8px(&font_atlas, (Vector2I){1, 100}, "This is a sentence supposed to look normal. Does it?");
-        if (extra_player.grid_position.y == 2) {
+        if (extra_player.grid_position.x == 13 && extra_player.grid_position.y == 1) {
             extra_player.stop = TRUE;
             if (!move_player(&extra_player, DOWN)) {
             }
         }
-        else if (extra_player.grid_position.y == 4) {
+        else if (extra_player.grid_position.x == 7 && extra_player.grid_position.y == 6) {
             extra_player.stop = TRUE;
             if (!move_player(&extra_player, UP)) {
             }
         }
+        else if (extra_player.grid_position.y == 1) {
+            extra_player.stop = TRUE;
+            if (!move_player(&extra_player, RIGHT)) {
+            }
+        }
+        else if (extra_player.grid_position.y == 6) {
+            extra_player.stop = TRUE;
+            if (!move_player(&extra_player, LEFT)) {
+            }
+        }
         update_player(&game_state.player, delta, time, 8);
         update_player(&extra_player, delta, time, 8);
-        update_player(&extra_player2, delta, time, 8);
+        update_player(&extra_player2, delta, time, 4);
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         // draw_image(&dude, (Vector2I){0, 0});
         // draw_sprite(&ui_atlas, ivec2(2,114), ivec2(2,114), ivec2(236, 44));
