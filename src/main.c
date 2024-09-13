@@ -39,7 +39,28 @@ keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed
         }
     }
     else {
-        move_input(IDLE);
+        switch (key) {
+            case KB_KEY_W:
+                if (game_state.player.move == UP) {
+                    move_input(IDLE);
+                }
+                break;
+            case KB_KEY_S:
+                if (game_state.player.move == DOWN) {
+                    move_input(IDLE);
+                }
+                break;
+            case KB_KEY_A:
+                if (game_state.player.move == LEFT) {
+                    move_input(IDLE);
+                }
+                break;
+            case KB_KEY_D: 
+                if (game_state.player.move == RIGHT) {
+                    move_input(IDLE);
+                }
+            break;
+        }
     }
 }
 
@@ -116,7 +137,7 @@ int main() {
         draw_background();
         draw_map(&map, &tile_atlas);
         draw_string_8px(&font_atlas, (Vector2I){1, 1}, fps_string);
-        draw_string_8px(&font_atlas, (Vector2I){1, 100}, "This is a sentence supposed to look normal. Does it?");
+        // draw_string_8px(&font_atlas, (Vector2I){1, 100}, "This is a sentence supposed to look normal. Does it?");
         if (extra_player.grid_position.x == 13 && extra_player.grid_position.y == 1) {
             extra_player.stop = TRUE;
             if (!move_player(&extra_player, DOWN)) {
@@ -143,7 +164,7 @@ int main() {
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         // draw_image(&dude, (Vector2I){0, 0});
         // draw_sprite(&ui_atlas, ivec2(2,114), ivec2(2,114), ivec2(236, 44));
-        draw_string_8px(&font_atlas, (Vector2I){8, 120}, "Pretend response from LLM: this is some art:\\n####\\n#   #\\n####.");
+        // draw_string_8px(&font_atlas, (Vector2I){8, 120}, "Pretend response from LLM: this is some art:\\n####\\n#   #\\n####.");
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
         // printf("collision map: %s\n", game_state.collision_map[0]);
         // printf("collision map: %s\n", game_state.collision_map[1]);
@@ -171,10 +192,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     argv[0] = cmdLine; // Treat the whole command line as a single argument
     
     // Open a console to show the debug output
-    // AllocConsole();
-    // FILE* fp;
-    // freopen_s(&fp, "CONOUT$", "w", stdout);
-    // freopen_s(&fp, "CONOUT$", "w", stderr);
+    AllocConsole();
+    FILE* fp;
+    freopen_s(&fp, "CONOUT$", "w", stdout);
+    freopen_s(&fp, "CONOUT$", "w", stderr);
 
     // Call main with the parsed arguments
     int result = main(argc, argv);

@@ -23,6 +23,7 @@ typedef struct {
     Vector2I grid_position; // grid position in tiles
     Direction direction;
     Direction move;
+    Direction queue;
     Vector2I sprite_size;
     Vector2I offset;
     sprite_atlas *sprite_sheet;
@@ -157,6 +158,7 @@ Player create_player(Vector2I position, sprite_atlas *sprite_sheet, Vector2I spr
     player.grid_position = position;
     player.direction = 1; // right
     player.move = IDLE; // idle
+    player.queue = IDLE;
     player.sprite_size = sprite_size;
     player.offset = (Vector2I){0 , GRID_SIZE - sprite_size.y}; // 0 to draw sprite on left and GRID_SIZE - sprite_size.y to draw sprite on bottom
     player.sprite_sheet = sprite_sheet;
@@ -167,11 +169,14 @@ Player create_player(Vector2I position, sprite_atlas *sprite_sheet, Vector2I spr
 
 int move_player(Player *player, Direction move) {
     if (player->move != IDLE) {
+        if (move != IDLE) {player->stop = FALSE; player->queue = move;}
+        else {player->queue = IDLE;}
         return 1; // already moving
     }
     player->stop = FALSE;
     player->move = move;
     player->direction = move;
+    player->queue = move;
     switch (move) {
         case UP:
             if (game_state.collision_map[player->grid_position.y - 1][player->grid_position.x] == '#'){
@@ -226,12 +231,8 @@ int move_player(Player *player, Direction move) {
 }
 
 void move_input(Direction move) {
-    if (move == IDLE) {
-        game_state.player.stop = TRUE;
-    }
-    if (game_state.player.move == IDLE) {
-        move_player(&game_state.player, move);
-    }
+    
+    move_player(&game_state.player, move);
 }
 
 void update_player(Player *player, double delta, double time, double speed) {
@@ -303,10 +304,11 @@ void update_player(Player *player, double delta, double time, double speed) {
             player->position.x = player->grid_position.x * GRID_SIZE;
             player->position.y = player->grid_position.y * GRID_SIZE;
             if (player->stop == TRUE) { // stop moving
+                printf("STOP\n");
                 player->move = IDLE;
             }
             else { // continue moving
-                Direction move = player->move;
+                Direction move = player->queue;
                 player->move = IDLE;
                 move_player(player, move);
             }
