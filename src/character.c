@@ -74,7 +74,7 @@ void draw_sprite(sprite_atlas *sprite, Vector2I position, Vector2I atlas_locatio
                     // add transparency
                     uint32_t pixel = sprite->buffer[i * sprite->width + j];
                     uint32_t pixel_old = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)];
-                    double alpha = (pixel & 0xFF000000) / 0xFF000000;
+                    double alpha = (float)(pixel & 0xFF000000) / (float) 0xFF000000;
                     //printf("%f\n", alpha);
                     //pixel = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] * (1-alpha) + pixel * alpha;
                     //pixel = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] * (1-alpha);

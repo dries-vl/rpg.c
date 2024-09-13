@@ -107,6 +107,7 @@ int main() {
     move_player(&extra_player, UP);
 
     mfb_set_target_fps(30);
+    // llm_request_async("Show me some shitty ascii art. Don't say anything at all, immediately output an ascii art cow. Max. 3x3 rows high");
 
     while (mfb_wait_sync(window)) {
         time = mfb_timer_now(timer);
@@ -142,6 +143,7 @@ int main() {
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         // draw_image(&dude, (Vector2I){0, 0});
         // draw_sprite(&ui_atlas, ivec2(2,114), ivec2(2,114), ivec2(236, 44));
+        draw_string_8px(&font_atlas, (Vector2I){8, 120}, "Pretend response from LLM: this is some art:\\n####\\n#   #\\n####.");
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
         // printf("collision map: %s\n", game_state.collision_map[0]);
         // printf("collision map: %s\n", game_state.collision_map[1]);
@@ -169,10 +171,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     argv[0] = cmdLine; // Treat the whole command line as a single argument
     
     // Open a console to show the debug output
-    AllocConsole();
-    FILE* fp;
-    freopen_s(&fp, "CONOUT$", "w", stdout);
-    freopen_s(&fp, "CONOUT$", "w", stderr);
+    // AllocConsole();
+    // FILE* fp;
+    // freopen_s(&fp, "CONOUT$", "w", stdout);
+    // freopen_s(&fp, "CONOUT$", "w", stderr);
 
     // Call main with the parsed arguments
     int result = main(argc, argv);
