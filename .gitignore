@@ -1,2 +1,6 @@
 *.exe
 .vscode/*
+kernel.dll
+kernel.lib
+kernel.o
+kernel.exp
