@@ -98,10 +98,6 @@ double              mfb_timer_get_resolution(void);
 #ifdef __cplusplus
 }
 
-#if !defined(MINIFB_AVOID_CPP_HEADERS)
-    #include "MiniFB_cpp.h"
-#endif
-
 #endif
 
 #endif

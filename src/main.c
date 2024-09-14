@@ -11,7 +11,6 @@
 
 #include "ui.c"
 
-
 static void
 keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed) {
     const char *window_title = "BIIIIK";
@@ -84,6 +83,38 @@ void draw_background() {
     fill_square(half_width, half_height, BASE_WIDTH, BASE_HEIGHT, MFB_RGB(255, 255, 0));  // Bottom-right, Yellow
 }
 
+__declspec(dllimport) void *cuda_add(int *a, int *b, int *c);
+
+void run_cuda_code() {
+    // load the cuda code dll
+    HMODULE hCudaDll = LoadLibrary("kernel.dll");
+    if (!hCudaDll) {
+        printf("Failed to load CUDA DLL.\n");
+        return;
+    }
+    // load the function from the dll
+    void (*cuda_add)(int*, int*, int*) = (void (*)(int*, int*, int*))GetProcAddress(hCudaDll, "cuda_add");
+    if (!cuda_add) {
+        printf("Failed to get function address from CUDA DLL.\n");
+        FreeLibrary(hCudaDll);
+        return;
+    }
+
+    int size = 10;
+    int a[10] = {1, 1, 1, 1, 1, 4, 4, 4, 4, 4};
+    int b[10] = {1, 1, 1, 1, 1, 4, 4, 4, 4, 4};
+    int c[10];
+
+    cuda_add(a, b, c);
+
+    // print the array
+    for (int i = 0; i < size; i++) {
+        printf("%d ", c[i]);  // Print each element followed by a space
+    }
+    printf("\n");  // New line after printing array
+    FreeLibrary(hCudaDll);
+}
+
 int main() {
     struct mfb_window *window = mfb_open_ex("rpg.c", BASE_WIDTH * 4, BASE_HEIGHT * 4, WF_BORDERLESS);
     if (!window)
@@ -94,6 +125,9 @@ int main() {
     sprite_atlas font_atlas = load_image_bmp("assets/font_atlas.bmp");
     sprite_atlas ui_atlas = load_image_bmp("assets/ui_atlas.bmp");
     sprite_atlas dude = load_image_bmp("assets/TEST_DUDE_CR.bmp");
+
+    // cuda gpu call
+    //run_cuda_code();
 
     struct mfb_timer *timer = mfb_timer_create();
     double delta = 0;
@@ -164,13 +198,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     argv[0] = cmdLine; // Treat the whole command line as a single argument
     
     // Open a console to show the debug output
-    // AllocConsole();
-    // FILE* fp;
-    // freopen_s(&fp, "CONOUT$", "w", stdout);
-    // freopen_s(&fp, "CONOUT$", "w", stderr);
+    AllocConsole();
+    FILE* fp;
+    freopen_s(&fp, "CONOUT$", "w", stdout);
+    freopen_s(&fp, "CONOUT$", "w", stderr);
 
     // Call main with the parsed arguments
-    int result = main(argc, argv);
+    int result = main();
 
     // Clean up (no dynamic memory allocation here, so no need for free())
     return result;
