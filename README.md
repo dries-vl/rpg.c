@@ -1,6 +1,9 @@
 # tcc compile command
 tcc src/main.c -Iinclude -Llib -lminifb -lcurl -ltinycthread -luser32 -lgdi32 -lwinmm icon.res
 
+# create cuda dll
+nvcc --shared -o kernel.dll src/kernel.cu -lcudart
+
 # create .ico with magick command (needed for windows icons)
 magick convert logo.png logo.ico
 
