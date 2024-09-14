@@ -2,8 +2,6 @@
 #include <windows.h>
 #endif
 
-#include <minifb/MiniFB.h>
-#include <minifb/MiniFB_enums.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -13,7 +11,8 @@
 
 
 static void
-keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed) {
+keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed) { 
+    uint8_t *key_buffer = mfb_get_key_buffer(window);
     const char *window_title = "BIIIIK";
     if(window) {
         window_title = (const char *) mfb_get_user_data(window);
@@ -25,43 +24,20 @@ keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed
     if (isPressed) {
         switch (key) {
             case KB_KEY_W:
-                move_input(UP);
+                move_input(UP, window);
                 break;
             case KB_KEY_S:
-                move_input(DOWN);
+                move_input(DOWN, window);
                 break;
             case KB_KEY_A:
-                move_input(LEFT);
+                move_input(LEFT, window);
                 break;
             case KB_KEY_D: 
-                move_input(RIGHT);
-            break;
+                move_input(RIGHT, window);
+                break;
         }
     }
-    else {
-        switch (key) {
-            case KB_KEY_W:
-                if (game_state.player.move == UP) {
-                    move_input(IDLE);
-                }
-                break;
-            case KB_KEY_S:
-                if (game_state.player.move == DOWN) {
-                    move_input(IDLE);
-                }
-                break;
-            case KB_KEY_A:
-                if (game_state.player.move == LEFT) {
-                    move_input(IDLE);
-                }
-                break;
-            case KB_KEY_D: 
-                if (game_state.player.move == RIGHT) {
-                    move_input(IDLE);
-                }
-            break;
-        }
-    }
+    else {move_input(IDLE, window);}
 }
 
 void set_windows_icon() {

@@ -44,6 +44,9 @@ Game_state init_game_state(Player player) {
 }
 
 Game_state game_state;
+
+uint8_t player_move_input_memory[4] = {IDLE, IDLE, IDLE, IDLE}; // 10101010
+
 /*
                                                 ----RENDERING----
 */
@@ -75,7 +78,7 @@ void draw_sprite(sprite_atlas *sprite, Vector2I position, Vector2I atlas_locatio
                     // add transparency
                     uint32_t pixel = sprite->buffer[i * sprite->width + j];
                     uint32_t pixel_old = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)];
-                    double alpha = (float)(pixel & 0xFF000000) / (float) 0xFF000000;
+                    double alpha = (double)(pixel & 0xFF000000) / (float) 0xFF000000;
                     //printf("%f\n", alpha);
                     //pixel = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] * (1-alpha) + pixel * alpha;
                     //pixel = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] * (1-alpha);
@@ -137,8 +140,10 @@ void draw_player_run_animation(Player *player, double time, double speed, Direct
             break;
     }
     draw_character_idle_animation(corr_sprite_sheet, position, player->sprite_size, start_frame, 4, time, speed);
-    //free(corr_sprite_sheet->buffer);
-    //free(corr_sprite_sheet);
+    if (direction == LEFT) {
+        free(corr_sprite_sheet->buffer);
+        free(corr_sprite_sheet);
+    }
 }
 
 void draw_player_idle_animation(Player *player, double time, double speed) {
@@ -230,9 +235,38 @@ int move_player(Player *player, Direction move) {
     return 0;
 }
 
-void move_input(Direction move) {
-    
-    move_player(&game_state.player, move);
+
+void move_input(Direction move, struct mfb_window *window) {    
+    uint8_t *key_buffer = mfb_get_key_buffer(window);
+    uint8_t direction_pressed = (key_buffer[KB_KEY_W] << (UP*2)) +
+                                (key_buffer[KB_KEY_W] << (UP*2 + 1)) +
+                                (key_buffer[KB_KEY_D] << (RIGHT*2)) +
+                                (key_buffer[KB_KEY_D] << (RIGHT*2 + 1)) +
+                                (key_buffer[KB_KEY_S] << (DOWN*2)) +
+                                (key_buffer[KB_KEY_S] << (DOWN*2 + 1)) +
+                                (key_buffer[KB_KEY_A] << (LEFT*2)) +
+                                (key_buffer[KB_KEY_A] << (LEFT*2 + 1));
+    if (move == IDLE) {
+        for (int i = 0; i < 4; i++) { // loop over input memory
+            if (((direction_pressed & (3 << (player_move_input_memory[i]*2))) == 0) && (player_move_input_memory[i] != IDLE)) { // remove the direction from memory
+                player_move_input_memory[i] = IDLE;
+                for (int j = i; j < 3; j++) {
+                    player_move_input_memory[j] = player_move_input_memory[j+1];
+                }
+                player_move_input_memory[3] = IDLE;
+            }
+        }
+    }
+    else {
+        for (int i = 0; i < 4; i++) { // loop over input memory
+            if (player_move_input_memory[i] == move) {break;}
+            else if (player_move_input_memory[i] == IDLE) {
+                player_move_input_memory[i] = move;
+                break;
+            }
+        }
+    }
+    move_player(&game_state.player, player_move_input_memory[0]);
 }
 
 void update_player(Player *player, double delta, double time, double speed) {
