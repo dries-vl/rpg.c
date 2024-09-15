@@ -5,14 +5,14 @@
 #define SPACE_WIDTH_8PX 4
 /* The width of each character in the original 8px font atlas, to remove empty space between characters and get correct kerning */
 const int FONT_8PX_WIDTHS[128] = {
-     0, /* NUL */  0, /* SOH */  0, /* STX */  0, /* ETX */
-     0, /* EOT */  0, /* ENQ */  0, /* ACK */  0, /* BEL */
-     0, /* BS  */  0, /* HT  */  8, /* LF  */  0, /* VT  */
-     0, /* FF  */  8, /* CR  */  0, /* SO  */  0, /* SI  */
-     0, /* DLE */  0, /* DC1 */  0, /* DC2 */  0, /* DC3 */
-     0, /* DC4 */  0, /* NAK */  0, /* SYN */  0, /* ETB */
-     0, /* CAN */  0, /* EM  */  0, /* SUB */  0, /* ESC */
-     0, /* FS  */  0, /* GS  */  0, /* RS  */  0, /* US  */
+     8, /* NUL */  8, /* SOH */  8, /* STX */  8, /* ETX */
+     8, /* EOT */  8, /* ENQ */  8, /* ACK */  8, /* BEL */
+     8, /* BS  */  8, /* HT  */  8, /* LF  */  8, /* VT  */
+     8, /* FF  */  8, /* CR  */  8, /* SO  */  8, /* SI  */
+     8, /* DLE */  8, /* DC1 */  8, /* DC2 */  8, /* DC3 */
+     8, /* DC4 */  8, /* NAK */  8, /* SYN */  8, /* ETB */
+     8, /* CAN */  8, /* EM  */  8, /* SUB */  8, /* ESC */
+     8, /* FS  */  8, /* GS  */  8, /* RS  */  8, /* US  */
      8, /* ' ' */  2, /* '!' */  4, /* '"' */  7, /* '#' */
      6, /* '$' */  8, /* '%' */  6, /* '&' */  2, /* '\'' */
      4, /* '(' */  4, /* ')' */  6, /* '*' */  6, /* '+' */
@@ -45,22 +45,46 @@ void draw_char_8px(sprite_atlas *font_atlas, Vector2I position, char c) {
     draw_sprite(font_atlas, position, atlas_position, (Vector2I){FONT_8PX_WIDTHS[c],8});
 }
 
+int at_bottom(Vector2I *position, Vector2I starting_position, sprite_atlas *font_atlas) {
+    if (position->y - starting_position.y >= CHAR_SIZE_8PX * 3) {
+        draw_char_8px(font_atlas, *position, 0);
+        return 1;
+    }
+    return 0;
+}
+
+void move_text_down(Vector2I *position, Vector2I starting_position) {
+    position->x = starting_position.x;
+    position->y += CHAR_SIZE_8PX;
+}
+
 // Draw a string with 8x8 pixel characters
 void draw_string_8px(sprite_atlas *font_atlas, Vector2I position, char *str) {
-    int original_position_x = position.x;
+    Vector2I starting_position = ivec2(position.x, position.y);
     int escaped = 0;
+    int bottom = 0;
     for (char *p = str; *p != '\0'; p++) {
         switch (*p) {
             case ' ': position.x += SPACE_WIDTH_8PX; break;
             case 92: /*'\\'*/ escaped = 1; break;
-            case 10: /*'\n'*/ position.y += CHAR_SIZE_8PX; position.x = original_position_x; break;
-            case 'n': if (escaped) {position.y += CHAR_SIZE_8PX; position.x = original_position_x; break;}; // FALL-THROUGH!!!
+            case 10: /*'\n'*/ { 
+                bottom = at_bottom(&position, starting_position, font_atlas);
+                move_text_down(&position, starting_position);
+                break;
+                }
+            case 'n': if (escaped) {
+                bottom = at_bottom(&position, starting_position, font_atlas);
+                move_text_down(&position, starting_position);
+                break;
+                } // FALL-THROUGH!!!
             default: draw_char_8px(font_atlas, position, *p); position.x += FONT_8PX_WIDTHS[*p]; break;
         }
-        if (position.x >= BASE_WIDTH - CHAR_SIZE_8PX) {
-            position.x = original_position_x;
-            position.y += CHAR_SIZE_8PX;
+        if (position.x >= (BASE_WIDTH - (6 + (*p==' ')*24)) - CHAR_SIZE_8PX) { // 6px to stay within ui, 24px extra for space to cut off words
+            move_text_down(&position, starting_position);
         }
         if (*p != 92) escaped = 0;
+        if (bottom) return;
     }
 }
+
+

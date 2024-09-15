@@ -23,16 +23,16 @@ keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed
     
     if (isPressed) {
         switch (key) {
-            case KB_KEY_W:
+            case KB_KEY_W: case KB_KEY_E:
                 move_input(UP);
                 break;
-            case KB_KEY_S:
+            case KB_KEY_S: case KB_KEY_N:
                 move_input(DOWN);
                 break;
-            case KB_KEY_A:
+            case KB_KEY_A: case KB_KEY_M:
                 move_input(LEFT);
                 break;
-            case KB_KEY_D: 
+            case KB_KEY_D: case KB_KEY_I:
                 move_input(RIGHT);
             break;
         }
@@ -127,7 +127,7 @@ int main() {
     sprite_atlas map = load_image_bmp("assets/map.bmp");
 
     // cuda gpu call
-    //run_cuda_code();
+    // run_cuda_code();
 
     struct mfb_timer *timer = mfb_timer_create();
     double delta = 0;
@@ -176,7 +176,10 @@ int main() {
         update_player(&extra_player2, delta, time, 4);
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         // draw_image(&dude, (Vector2I){0, 0});
-        // draw_sprite(&ui_atlas, ivec2(2,114), ivec2(2,114), ivec2(236, 44));
+        // TODO: set the text drawing to limit within box
+        // TODO: cut off on words instead of per character
+        // TODO: stop the text from rendering until button is pressed -> show next chunk of text that fits the box
+        draw_sprite(&ui_atlas, ivec2(2,114), ivec2(2,114), ivec2(236, 44));
         draw_string_8px(&font_atlas, (Vector2I){8, 120}, "Pretend response from LLM: this is some art:\\n####\\n#   #\\n####.");
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
         // printf("collision map: %s\n", game_state.collision_map[0]);
@@ -205,10 +208,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     argv[0] = cmdLine; // Treat the whole command line as a single argument
     
     // Open a console to show the debug output
-    AllocConsole();
-    FILE* fp;
-    freopen_s(&fp, "CONOUT$", "w", stdout);
-    freopen_s(&fp, "CONOUT$", "w", stderr);
+    // AllocConsole();
+    // FILE* fp;
+    // freopen_s(&fp, "CONOUT$", "w", stdout);
+    // freopen_s(&fp, "CONOUT$", "w", stderr);
 
     // Call main with the parsed arguments
     int result = main();
