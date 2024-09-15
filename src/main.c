@@ -2,8 +2,6 @@
 #include <windows.h>
 #endif
 
-#include <minifb/MiniFB.h>
-#include <minifb/MiniFB_enums.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -12,7 +10,8 @@
 #include "map.c"
 
 static void
-keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed) {
+keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed) { 
+    uint8_t *key_buffer = mfb_get_key_buffer(window);
     const char *window_title = "BIIIIK";
     if(window) {
         window_title = (const char *) mfb_get_user_data(window);
@@ -23,6 +22,7 @@ keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed
     
     if (isPressed) {
         switch (key) {
+<<<<<<< HEAD
             case KB_KEY_W: case KB_KEY_E:
                 move_input(UP);
                 break;
@@ -35,11 +35,23 @@ keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed
             case KB_KEY_D: case KB_KEY_I:
                 move_input(RIGHT);
             break;
+=======
+            case KB_KEY_W:
+                move_input(UP, window);
+                break;
+            case KB_KEY_S:
+                move_input(DOWN, window);
+                break;
+            case KB_KEY_A:
+                move_input(LEFT, window);
+                break;
+            case KB_KEY_D: 
+                move_input(RIGHT, window);
+                break;
+>>>>>>> e92034aa7b037952f14bf4bf8257cbabbd364e28
         }
     }
-    else {
-        move_input(IDLE);
-    }
+    else {move_input(IDLE, window);}
 }
 
 void set_windows_icon() {
@@ -150,7 +162,7 @@ int main() {
         draw_background();
         draw_map(&map, &tile_atlas);
         draw_string_8px(&font_atlas, (Vector2I){1, 1}, fps_string);
-        draw_string_8px(&font_atlas, (Vector2I){1, 100}, "This is a sentence supposed to look normal. Does it?");
+        // draw_string_8px(&font_atlas, (Vector2I){1, 100}, "This is a sentence supposed to look normal. Does it?");
         if (extra_player.grid_position.x == 13 && extra_player.grid_position.y == 1) {
             extra_player.stop = TRUE;
             if (!move_player(&extra_player, DOWN)) {
@@ -176,11 +188,16 @@ int main() {
         update_player(&extra_player2, delta, time, 4);
         // draw_frame(&dude, (Vector2I){0, 0}, 0, (Vector2I){21, 21});
         // draw_image(&dude, (Vector2I){0, 0});
+<<<<<<< HEAD
         // TODO: set the text drawing to limit within box
         // TODO: cut off on words instead of per character
         // TODO: stop the text from rendering until button is pressed -> show next chunk of text that fits the box
         draw_sprite(&ui_atlas, ivec2(2,114), ivec2(2,114), ivec2(236, 44));
         draw_string_8px(&font_atlas, (Vector2I){8, 120}, "Pretend response from LLM: this is some art:\\n####\\n#   #\\n####.");
+=======
+        // draw_sprite(&ui_atlas, ivec2(2,114), ivec2(2,114), ivec2(236, 44));
+        // draw_string_8px(&font_atlas, (Vector2I){8, 120}, "Pretend response from LLM: this is some art:\\n####\\n#   #\\n####.");
+>>>>>>> e92034aa7b037952f14bf4bf8257cbabbd364e28
         mfb_update_ex(window, base_buffer, BASE_WIDTH, BASE_HEIGHT);
         // printf("collision map: %s\n", game_state.collision_map[0]);
         // printf("collision map: %s\n", game_state.collision_map[1]);

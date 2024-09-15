@@ -23,6 +23,7 @@ typedef struct {
     Vector2I grid_position; // grid position in tiles
     Direction direction;
     Direction move;
+    Direction queue;
     Vector2I sprite_size;
     Vector2I offset;
     sprite_atlas *sprite_sheet;
@@ -43,6 +44,9 @@ Game_state init_game_state(Player player) {
 }
 
 Game_state game_state;
+
+uint8_t player_move_input_memory[4] = {IDLE, IDLE, IDLE, IDLE}; // 10101010
+
 /*
                                                 ----RENDERING----
 */
@@ -74,7 +78,7 @@ void draw_sprite(sprite_atlas *sprite, Vector2I position, Vector2I atlas_locatio
                     // add transparency
                     uint32_t pixel = sprite->buffer[i * sprite->width + j];
                     uint32_t pixel_old = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)];
-                    double alpha = (float)(pixel & 0xFF000000) / (float) 0xFF000000;
+                    double alpha = (double)(pixel & 0xFF000000) / (float) 0xFF000000;
                     //printf("%f\n", alpha);
                     //pixel = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] * (1-alpha) + pixel * alpha;
                     //pixel = base_buffer[(position.y + i - atlas_location.y) * BASE_WIDTH + (position.x + j - atlas_location.x)] * (1-alpha);
@@ -136,8 +140,10 @@ void draw_player_run_animation(Player *player, double time, double speed, Direct
             break;
     }
     draw_character_idle_animation(corr_sprite_sheet, position, player->sprite_size, start_frame, 4, time, speed);
-    //free(corr_sprite_sheet->buffer);
-    //free(corr_sprite_sheet);
+    if (direction == LEFT) {
+        free(corr_sprite_sheet->buffer);
+        free(corr_sprite_sheet);
+    }
 }
 
 void draw_player_idle_animation(Player *player, double time, double speed) {
@@ -157,6 +163,7 @@ Player create_player(Vector2I position, sprite_atlas *sprite_sheet, Vector2I spr
     player.grid_position = position;
     player.direction = 1; // right
     player.move = IDLE; // idle
+    player.queue = IDLE;
     player.sprite_size = sprite_size;
     player.offset = (Vector2I){0 , GRID_SIZE - sprite_size.y}; // 0 to draw sprite on left and GRID_SIZE - sprite_size.y to draw sprite on bottom
     player.sprite_sheet = sprite_sheet;
@@ -167,11 +174,14 @@ Player create_player(Vector2I position, sprite_atlas *sprite_sheet, Vector2I spr
 
 int move_player(Player *player, Direction move) {
     if (player->move != IDLE) {
+        if (move != IDLE) {player->stop = FALSE; player->queue = move;}
+        else {player->queue = IDLE;}
         return 1; // already moving
     }
     player->stop = FALSE;
     player->move = move;
     player->direction = move;
+    player->queue = move;
     switch (move) {
         case UP:
             if (game_state.collision_map[player->grid_position.y - 1][player->grid_position.x] == '#'){
@@ -225,13 +235,38 @@ int move_player(Player *player, Direction move) {
     return 0;
 }
 
-void move_input(Direction move) {
+
+void move_input(Direction move, struct mfb_window *window) {    
+    uint8_t *key_buffer = mfb_get_key_buffer(window);
+    uint8_t direction_pressed = (key_buffer[KB_KEY_W] << (UP*2)) +
+                                (key_buffer[KB_KEY_W] << (UP*2 + 1)) +
+                                (key_buffer[KB_KEY_D] << (RIGHT*2)) +
+                                (key_buffer[KB_KEY_D] << (RIGHT*2 + 1)) +
+                                (key_buffer[KB_KEY_S] << (DOWN*2)) +
+                                (key_buffer[KB_KEY_S] << (DOWN*2 + 1)) +
+                                (key_buffer[KB_KEY_A] << (LEFT*2)) +
+                                (key_buffer[KB_KEY_A] << (LEFT*2 + 1));
     if (move == IDLE) {
-        game_state.player.stop = TRUE;
+        for (int i = 0; i < 4; i++) { // loop over input memory
+            if (((direction_pressed & (3 << (player_move_input_memory[i]*2))) == 0) && (player_move_input_memory[i] != IDLE)) { // remove the direction from memory
+                player_move_input_memory[i] = IDLE;
+                for (int j = i; j < 3; j++) {
+                    player_move_input_memory[j] = player_move_input_memory[j+1];
+                }
+                player_move_input_memory[3] = IDLE;
+            }
+        }
     }
-    if (game_state.player.move == IDLE) {
-        move_player(&game_state.player, move);
+    else {
+        for (int i = 0; i < 4; i++) { // loop over input memory
+            if (player_move_input_memory[i] == move) {break;}
+            else if (player_move_input_memory[i] == IDLE) {
+                player_move_input_memory[i] = move;
+                break;
+            }
+        }
     }
+    move_player(&game_state.player, player_move_input_memory[0]);
 }
 
 void update_player(Player *player, double delta, double time, double speed) {
@@ -303,10 +338,11 @@ void update_player(Player *player, double delta, double time, double speed) {
             player->position.x = player->grid_position.x * GRID_SIZE;
             player->position.y = player->grid_position.y * GRID_SIZE;
             if (player->stop == TRUE) { // stop moving
+                printf("STOP\n");
                 player->move = IDLE;
             }
             else { // continue moving
-                Direction move = player->move;
+                Direction move = player->queue;
                 player->move = IDLE;
                 move_player(player, move);
             }
